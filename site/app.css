@@ -295,7 +295,12 @@ svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-widt
 @media (prefers-reduced-motion:reduce){*,*::before{transition:none!important;animation:none!important}}
 
 /* ---------- website additions ---------- */
-.sw-body h2{font-size:1rem;margin:18px 0 6px}.sw-body ul,.sw-body ol{padding-left:1.2em}.sw-body p{margin:0 0 8px}
+a.t{display:block;text-decoration:none}a.t:hover{text-decoration:underline}
+.hero .sw-sub{font-family:var(--f-serif);font-style:italic;font-size:clamp(1.15rem,2.2vw,1.5rem);color:#BFD0FF;margin:8px 0 0}
+.sheet-body>*{flex-shrink:0}
+.sw-cover{width:100%;aspect-ratio:1200/630;object-fit:cover;border-radius:var(--r);display:block;background:var(--sunk);pointer-events:none}
+.sw-more{display:block;text-align:center;padding:12px 16px;border-radius:var(--r);background:var(--accent-soft);color:var(--accent);font-weight:600;text-decoration:none}.sw-more:hover{background:var(--accent);color:var(--accent-fg)}
+.sw-hero-img{width:100%;max-width:860px;height:auto;border-radius:var(--r);display:block;margin:0 0 18px;pointer-events:none}
 .sw-foot{border-top:1px solid var(--line);padding:26px 0 90px;color:var(--muted);font-size:.85rem}
 .sw-foot .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.sw-foot a{color:var(--muted)}
 .sw-page{padding-block:28px 70px}.sw-page .back{color:var(--accent);text-decoration:none;font-weight:500;font-size:.9rem}

@@ -30,8 +30,8 @@ const left = o => {
   if (d === 1) return {t:"1 day left", c:"now"};
   return {t:`${d} days left`, c: d <= 7 ? "soon" : ""};
 };
-const listOrP = (v, ol) => { const a = Array.isArray(v) ? v : String(v || "").split(/\n+|(?:^|\s)(?=\d+[.)]\s)/).map(s => s.replace(/^\s*(?:\d+[.)]|[-•*])\s*/, "").trim()).filter(Boolean); if (a.length < 2) return `<p>${esc(a[0] || "")}</p>`; const t = ol ? "ol" : "ul"; return `<${t} class="reqs">${a.map(x => `<li>${esc(x)}</li>`).join("")}</${t}>`; };
-const shareBtn = o => o.link ? `<button class="btn lg" type="button" onclick="(function(){var u='${esc(o.link)}',t=${esc(JSON.stringify(o.title))};if(navigator.share){navigator.share({title:t,url:u}).catch(function(){});}else{location.href=u;}})()">Share</button>` : "";
+const shareBtn = o => o.link ? `<button class="btn lg" type="button" data-share="${esc(o.link)}" data-title="${esc(o.title)}">Share</button>` : "";
+document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-share]"); if (!b) return; const u = b.getAttribute("data-share"), t = b.getAttribute("data-title"); if (navigator.share) navigator.share({title: t, url: u}).catch(() => {}); else if (navigator.clipboard) navigator.clipboard.writeText(u).then(() => { b.textContent = "Link copied"; setTimeout(() => b.textContent = "Share", 2000); }); else location.href = u; });
 const ago = iso => { const m = Math.round((Date.now() - Date.parse(iso)) / 6e4); if (!isFinite(m)) return ""; if (m < 1) return "just now"; if (m < 60) return m + " min ago"; if (m < 1440) return Math.round(m/60) + " h ago"; return Math.round(m/1440) + " d ago"; };
 const initials = s => (s||"?").replace(/\(.*?\)/g,"").split(/[\s\-]+/).filter(w => /^[A-Z0-9]/.test(w) && !/^(of|the|and|for|at)$/i.test(w)).slice(0,2).map(w => w[0]).join("") || s[0];
 const hue = s => { let h = 0; for (const c of s||"") h = (h*31 + c.charCodeAt(0)) >>> 0; return HUES[h % HUES.length]; };
@@ -128,7 +128,7 @@ function row(o, extra = "", lead = ""){
   return `<div class="op" role="button" tabindex="0" id="op-${esc(o.id)}" data-open="${esc(o.id)}">
     ${lead || `<div class="mono" style="background:${hue(o.provider)}" aria-hidden="true">${esc(initials(o.provider))}</div>`}
     <div class="mid">
-      <div class="t">${esc(o.title)}</div>
+      ${o.link ? `<a class="t" href="${esc(o.link)}" data-ln>${esc(o.title)}</a>` : `<div class="t">${esc(o.title)}</div>`}
       <div class="p"><span>${esc(o.provider)}</span><span class="sep"></span><span>${esc(o.host_country === "Global" ? "Global / online" : o.host_country)}</span><span class="sep"></span><span>${esc(TYPE1[o.type] || o.type)}</span></div>
       <div class="tags">
         ${isNew(o) ? `<span class="tag new">New</span>` : ""}
@@ -147,7 +147,7 @@ function row(o, extra = "", lead = ""){
 function bindRows(root){
   root.querySelectorAll("[data-save]").forEach(b => b.onclick = e => { e.stopPropagation(); toggleSave(b.dataset.save); });
   root.querySelectorAll("[data-open]").forEach(r => {
-    r.onclick = () => openSheet(r.dataset.open);
+    r.onclick = e => { const a = e.target.closest("a[data-ln]"); if (a && (e.ctrlKey || e.metaKey || e.shiftKey || e.button)) return; if (a) e.preventDefault(); openSheet(r.dataset.open); };
     r.onkeydown = e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); openSheet(r.dataset.open); } };
   });
 }
@@ -223,6 +223,7 @@ function openSheet(id){
   const l = left(o);
   $("#sh-kind").textContent = TYPE1[o.type] || "Opportunity";
   $("#sh-body").innerHTML = `
+    ${o.image ? `<img class="sw-cover" src="${esc(o.image)}" alt="${esc(o.title)}" loading="lazy" draggable="false">` : ""}
     <div style="display:flex;gap:14px;align-items:flex-start">
       <div class="mono" style="background:${hue(o.provider)};flex:none">${esc(initials(o.provider))}</div>
       <div style="min-width:0"><h2 id="sh-title">${esc(o.title)}</h2><div class="prov">${esc(o.provider)}</div></div>
@@ -236,10 +237,8 @@ function openSheet(id){
       <div class="fact"><div class="l">Fields</div><div class="v">${esc((o.fields||["any"]).map(f => f === "any" ? "All fields" : f).join(", "))}</div></div>
       <div class="fact"><div class="l">Who can apply</div><div class="v">${esc(o.eligible_nationalities === "all African" ? "African nationals" : Array.isArray(o.eligible_nationalities) ? o.eligible_nationalities.join(", ") : o.eligible_nationalities === "any" ? "All nationalities" : "See official page")}</div></div>
     </div>
-    ${o.content_html ? `<div class="sw-body">${o.content_html}</div>` : `${o.description ? `<div><h4>About</h4><p>${esc(o.description)}</p></div>` : ""}
-    ${o.benefits ? `<div><h4>What it covers</h4>${listOrP(o.benefits)}</div>` : ""}
-    <div><h4>Eligibility</h4>${(o.requirements||[]).length ? `<ul class="reqs">${o.requirements.map(r => `<li>${esc(r)}</li>`).join("")}</ul>` : `<p>${esc(o.eligibility_summary)}</p>`}</div>
-    ${o.how_to_apply ? `<div><h4>How to apply</h4>${listOrP(o.how_to_apply, true)}</div>` : ""}`}
+    ${o.eligibility_summary ? `<div><h4>In short</h4><p>${esc(o.eligibility_summary)}</p></div>` : ""}
+    ${o.link ? `<a class="sw-more" href="${esc(o.link)}">Read the full details</a>` : ""}
     ${o.age_max || o.min_gpa ? `<div class="callout">${o.age_max ? `<b>Age limit:</b> ${o.age_max}. ` : ""}${o.min_gpa ? `<b>Minimum GPA:</b> ${o.min_gpa}/4.0.` : ""}</div>` : ""}
     ${o.verified ? "" : `<div class="callout warn"><b>Not yet verified.</b> We found this on a listing site. Confirm the deadline and eligibility on the official page before you apply. Items are checked against official pages every hour.</div>`}
     <div style="font-size:.8rem;color:var(--muted)">Added ${esc(ago(o.added_at))}${o.source_url && o.source_url !== o.url ? ` · Found via <a href="${esc(o.source_url)}" target="_blank" rel="noopener" style="color:inherit">${esc(new URL(o.source_url).hostname.replace(/^www\./,""))}</a>` : ""}</div>`;
@@ -249,7 +248,7 @@ function openSheet(id){
 }
 function renderSheetFoot(id){
   const o = ALL.find(x => x.id === id); if (!o) return;
-  $("#sh-foot").innerHTML = `<button class="btn lg" data-save="${esc(o.id)}" aria-pressed="${saved.has(o.id)}">${ico("star")}${saved.has(o.id) ? "Saved" : "Save"}</button><a class="btn primary lg" href="${esc(o.url)}" target="_blank" rel="noopener">View and apply ${ico("ext")}</a>${shareBtn(o)}`;
+  $("#sh-foot").innerHTML = `<button class="btn lg" data-save="${esc(o.id)}" aria-pressed="${saved.has(o.id)}">${ico("star")}${saved.has(o.id) ? "Saved" : "Save"}</button>${o.link ? `<a class="btn primary lg" href="${esc(o.link)}">Full details</a>` : ""}${shareBtn(o)}`;
   $("#sh-foot [data-save]").onclick = () => toggleSave(o.id);
 }
 function closeSheet(){ $("#sheet").classList.remove("on"); $("#scrim").classList.remove("on"); $("#sheet").setAttribute("aria-hidden","true"); lastFocus?.focus?.(); }
@@ -339,7 +338,7 @@ function admRow(o){
   return `<div class="op" role="button" tabindex="0" data-adm="${esc(o.id)}">
     <div class="mono" style="background:${hue(o.university)}" aria-hidden="true">${esc(initials(o.university))}</div>
     <div class="mid">
-      <div class="t">${esc(o.title)}</div>
+      ${o.link ? `<a class="t" href="${esc(o.link)}" data-ln>${esc(o.title)}</a>` : `<div class="t">${esc(o.title)}</div>`}
       <div class="p"><span>${esc(o.university)}</span><span class="sep"></span><span>${esc(placeOf(o))}</span>${o.intake ? `<span class="sep"></span><span>${esc(o.intake)}</span>` : ""}</div>
       <div class="tags">
         ${isNew(o) ? `<span class="tag new">New</span>` : ""}
@@ -372,7 +371,7 @@ function renderAdmit(){
   else if (!ADM.some(admOpen)) el.innerHTML = `<div class="empty"><div class="ei">${ico("school")}</div><h3>Open admissions are being gathered</h3><p>Programmes appear here as they are read from official university sites. The list is refreshed every hour.</p></div>`;
   else el.innerHTML = list.length ? list.map(admRow).join("") : `<div class="empty"><div class="ei">${ico("search")}</div><h3>No open programmes match yet</h3><p>Try a shorter degree name, such as "computer science" instead of "MSc in Computer Science", or remove a filter. New programmes are added every hour.</p><button class="btn" onclick="document.getElementById('a-clear').click()">Clear search</button></div>`;
   el.querySelectorAll("[data-adm]").forEach(r => {
-    r.onclick = () => openAdm(r.dataset.adm);
+    r.onclick = e => { const a = e.target.closest("a[data-ln]"); if (a && (e.ctrlKey || e.metaKey || e.shiftKey || e.button)) return; if (a) e.preventDefault(); openAdm(r.dataset.adm); };
     r.onkeydown = e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); openAdm(r.dataset.adm); } };
   });
 }
@@ -388,6 +387,7 @@ function openAdm(id){
   const fact = (k, v) => `<div class="fact"><div class="l">${k}</div><div class="v">${v ? esc(v) : `<span style="color:var(--muted)">See official page</span>`}</div></div>`;
   $("#sh-kind").textContent = "Open admission";
   $("#sh-body").innerHTML = `
+    ${o.image ? `<img class="sw-cover" src="${esc(o.image)}" alt="${esc(o.title)}" loading="lazy" draggable="false">` : ""}
     <div style="display:flex;gap:14px;align-items:flex-start">
       <div class="mono" style="background:${hue(o.university)};flex:none">${esc(initials(o.university))}</div>
       <div style="min-width:0"><h2 id="sh-title">${esc(o.title)}</h2><div class="prov">${esc(o.university)} · ${esc(placeOf(o))}</div></div>
@@ -404,15 +404,16 @@ function openAdm(id){
       ${fact("Application fee", o.application_fee)}
     </div>
     ${o.deadline_note ? `<div class="callout"><b>Other dates:</b> ${esc(o.deadline_note)}</div>` : ""}
-    ${o.description ? `<div><h4>About</h4><p>${esc(o.description)}</p></div>` : ""}
+    ${o.summary ? `<div><h4>In short</h4><p>${esc(o.summary)}</p></div>` : ""}
     ${progs.length > 1 ? `<div><h4>Programmes in this admission round</h4><div class="chips">${progs.map(n => `<span class="tag ${ws.length && ws.every(w => norm(n).includes(w)) ? "hit" : ""}">${esc(n)}</span>`).join("")}</div></div>` : ""}
-    <div><h4>Eligibility requirements</h4>${(o.requirements||[]).length ? `<ul class="reqs">${o.requirements.map(r => `<li>${esc(r)}</li>`).join("")}</ul>` : `<p>See the official page for entry requirements.</p>`}</div>
+    <div><h4>Eligibility requirements</h4>${(o.requirements||[]).length ? `<ul class="reqs">${o.requirements.map(r => `<li>${esc(r)}</li>`).join("")}</ul>` : `<p>The full entry requirements are in the article.</p>`}</div>
     <div><h4>Who can apply</h4><p>${esc(who)}${(o.closed_to||[]).length ? `, except ${esc(o.closed_to.join(", "))}` : ""}.</p>
       ${notes.map(n => `<div class="callout ${A.origin && n.countries && n.countries.includes(A.origin) ? "warn" : ""}" style="margin-top:8px">${n.countries && n.countries.length ? `<b>${esc(n.countries.length > 6 ? "Applicants from " + n.countries.slice(0,6).join(", ") + " and others" : "Applicants from " + n.countries.join(", "))}:</b> ` : ""}${esc(n.note)}</div>`).join("")}</div>
-    <div><h4>Financial aid</h4>${o.financial_aid ? `<div class="callout good">${esc(o.financial_aid)}</div>` : `<p>The official page lists no financial aid for this programme. This is a self-funded option: check the university's scholarship page, or the Discover tab for outside funding.</p>`}</div>
+    <div><h4>Financial aid</h4>${o.financial_aid ? `<div class="callout good">This programme offers financial aid. The full article explains who qualifies and how to ask for it.</div>` : `<p>The official page lists no financial aid for this programme. This is a self-funded option: check the university's scholarship page, or the Discover tab for outside funding.</p>`}</div>
     ${o.verified ? "" : `<div class="callout warn"><b>Not yet checked against the official page.</b> Confirm the closing date and requirements on the university site before you apply.</div>`}
+    ${o.link ? `<a class="sw-more" href="${esc(o.link)}">Read the full details</a>` : ""}
     <div style="font-size:.8rem;color:var(--muted)">Added ${esc(ago(o.added_at))}${o.last_seen_at ? ` · Checked ${esc(ago(o.last_seen_at))}` : ""}${o.source_url && o.source_url !== o.url ? ` · Dates from <a href="${esc(o.source_url)}" target="_blank" rel="noopener" style="color:inherit">${esc(new URL(o.source_url).hostname.replace(/^www\./,""))}</a>` : ""}</div>`;
-  $("#sh-foot").innerHTML = `<a class="btn primary lg" href="${esc(o.apply_url || o.url)}" target="_blank" rel="noopener">${o.apply_url ? "Apply on the official portal" : "View on the university site"} ${ico("ext")}</a>${o.apply_url && o.url ? `<a class="btn lg" href="${esc(o.url)}" target="_blank" rel="noopener">Details</a>` : ""}${shareBtn(o)}`;
+  $("#sh-foot").innerHTML = `${o.link ? `<a class="btn primary lg" href="${esc(o.link)}">Full details</a>` : ""}${shareBtn(o)}`;
   $("#sheet").classList.add("on"); $("#scrim").classList.add("on"); $("#sheet").setAttribute("aria-hidden","false");
   setTimeout(() => $("#sh-close").focus(), 50);
 }
