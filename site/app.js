@@ -184,7 +184,7 @@ function renderDiscover(){
   const tc = countBy("type", o => o.type);
   const total = ALL.filter(o => passes(o, "type")).length;
   $("#quick").innerHTML = [["","All",total], ...Object.entries(TYPES).map(([k,v]) => [k,v,tc[k]||0])]
-    .map(([k,v,n]) => `<button class="qpill" data-t="${k}" aria-pressed="${F.type===k}">${v}<span class="n">${state==="ready"?n:""}</span></button>`).join("");
+    .map(([k,v,n]) => `<button class="qpill" data-t="${k}" aria-pressed="${F.type===k}">${v}<span class="n">${state==="ready"?n:""}</span></button>`).join("") + `<a class="qpill sw-self" href="#admissions">Self-funded study</a>`;
   $("#quick").querySelectorAll(".qpill").forEach(b => b.onclick = () => { F.type = b.dataset.t; update(); });
 
   renderFilters();
@@ -558,3 +558,8 @@ buildWizard(); fromHash(); renderAll();
   setInterval(setLive, 60000);
 })();
 })();
+
+(function(){var b=document.getElementById("swBurger"),bar=b&&b.closest(".appbar");if(!b)return;var s=document.createElement("div");s.className="sw-scrim";document.body.appendChild(s);
+function set(o){bar.classList.toggle("sw-open",o);document.body.classList.toggle("sw-menu-open",o);b.setAttribute("aria-expanded",o?"true":"false");}
+b.addEventListener("click",function(){set(!bar.classList.contains("sw-open"));});s.addEventListener("click",function(){set(false);});
+document.querySelectorAll("#swNav [role=tab], #swNav a").forEach(function(x){x.addEventListener("click",function(){set(false);});});})();

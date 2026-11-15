@@ -343,7 +343,7 @@ body{font-size:15px}
 .op .mono{background:var(--accent-soft)!important;color:var(--accent)!important;font-weight:700}
 .op .t,a.t{font-family:var(--f-head);font-weight:600;font-size:1.06rem;letter-spacing:-.005em}
 .tag.full{background:var(--green-soft);color:var(--green)}
-.sw-page h1,.ss-head h1,.ss-sec h2,.ss-similar h2,.ss-official h2,.sw-page h2{font-family:var(--f-head);font-weight:600}
+.sw-page h1,.ss-card h1,.ss-head h1,.ss-sec h2,.ss-similar h2,.ss-official h2,.sw-page h2{font-family:var(--f-head);font-weight:600}
 .ss-short{background:var(--accent-soft)!important}
 .sw-explore,.sw-related{margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
 .sw-explore h2,.sw-related h2{font-family:var(--f-head);font-size:1.2rem;margin:0 0 12px}
@@ -351,3 +351,24 @@ body{font-size:15px}
 .sw-links li{margin:0}
 .sw-links a{display:inline-block;padding:6px 13px;border-radius:999px;background:var(--sunk);border:1px solid var(--line);color:var(--fg-2)!important;text-decoration:none;font-size:.88rem}
 .sw-links a:hover{border-color:var(--accent);color:var(--accent)!important}
+
+/* public site: hide live note and the admissions tab (reached from the Self-funded link) */
+.live,#t-admit{display:none!important}
+a.qpill.sw-self{text-decoration:none;border-style:dashed}
+.sw-page:has(.ss-article)>.back{display:block;max-width:880px;margin:0 auto}
+.sw-burger{display:none}
+@media (max-width:720px){
+ body{padding-bottom:0!important}
+ .sw-burger{display:flex;flex-direction:column;justify-content:center;gap:4px;width:40px;height:40px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:0 10px;order:-1;margin-right:4px}
+ .sw-burger span{display:block;height:2px;background:var(--fg);border-radius:2px}
+ .appbar .tabs{position:fixed!important;top:0;left:0;bottom:0!important;right:auto!important;width:min(80vw,300px);height:100%!important;flex-direction:column;justify-content:flex-start!important;align-items:stretch;gap:2px;padding:76px 14px 20px!important;background:var(--surface)!important;border-top:0!important;border-right:1px solid var(--line);box-shadow:var(--shadow);transform:translateX(-105%);transition:transform .22s ease;z-index:60}
+ .appbar.sw-open .tabs{transform:none}
+ .appbar.sw-open{z-index:70!important}
+ .appbar .tabs button,.appbar .tabs a.tablink{flex:none!important;flex-direction:row!important;justify-content:flex-start!important;gap:12px!important;padding:13px 12px!important;font-size:1rem!important;border-radius:10px;text-align:left}
+ .appbar .tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent)}
+ .appbar .tabs button[aria-selected="true"]::after{display:none}
+ .sw-scrim{position:fixed;inset:0;background:rgba(20,22,28,.35);z-index:55;opacity:0;pointer-events:none;transition:opacity .2s}
+ body.sw-menu-open .sw-scrim{opacity:1;pointer-events:auto}
+ .appbar .logo{position:relative;z-index:61}
+ .toast{bottom:calc(20px + env(safe-area-inset-bottom,0px))!important}
+}
