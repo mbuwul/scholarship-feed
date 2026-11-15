@@ -309,5 +309,45 @@ a.t{display:block;text-decoration:none}a.t:hover{text-decoration:underline}
 .sw-card p,.sw-card li{color:var(--fg-2);line-height:1.6}.sw-card h2{font-size:1.05rem}
 .appbar a.tablink{display:flex;align-items:center;padding:0 12px;color:var(--muted);text-decoration:none;font-weight:500;font-size:.92rem}
 .appbar a.tablink:hover{color:var(--fg)}
+@media (max-width:720px){.appbar .tabs a.tablink{flex:1;justify-content:center;text-align:center;padding:8px 4px;font-size:.72rem;line-height:1.2}body:has(.sw-page){padding-bottom:70px}}
 .ss-single{--ss-line:var(--line);--ss-acc:var(--accent)}.ss-single .ss-banner{background:var(--accent-soft);border-left-color:var(--accent);color:var(--fg)}
 .ss-single .ss-fact{background:var(--sunk)}.ss-single .ss-apply{background:var(--accent);color:var(--accent-fg)!important}
+
+/* ---------- Scholar Wise look: calm ivory, deep teal, serif headings ---------- */
+:root{--bg:#F7F5F0;--surface:#FFFFFF;--raised:#FFFFFF;--sunk:#F2EFE8;--line:#E7E2D8;--line-strong:#D4CDBE;--fg:#1B1F27;--fg-2:#464C58;--muted:#7A7F89;--accent:#0F5E55;--accent-2:#0B4A43;--accent-fg:#FFFFFF;--accent-soft:#E4F0EC;--gold:#A6781E;--green:#1E7A4C;--green-soft:#E6F3EA;--f-head:"Fraunces",Georgia,"Times New Roman",serif;--shadow-sm:0 1px 2px rgba(27,31,39,.04);--shadow:0 10px 28px -12px rgba(27,31,39,.16),0 2px 6px rgba(27,31,39,.04)}
+:root:not([data-theme="light"]),:root[data-theme="dark"]{--accent:#5FC2B2;--accent-2:#7FD3C5;--accent-fg:#06201C;--accent-soft:#12302C;--gold:#D9AE5B;--f-head:"Fraunces",Georgia,serif}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--accent:#0F5E55;--accent-fg:#fff;--accent-soft:#E4F0EC}}
+body{font-size:15px}
+.logo .mark{background:var(--accent)!important;box-shadow:none}
+.appbar{background:color-mix(in srgb,var(--bg) 94%,transparent)!important}
+.tabs button[aria-selected="true"]::after{background:var(--accent)}
+.hero,.hero.adm{background:var(--bg)!important;color:var(--fg);border-bottom:1px solid var(--line)}
+.hero .wrap{padding-block:56px 34px}
+.eyebrow{color:var(--gold)}
+.hero h1{font-family:var(--f-head);font-weight:600;letter-spacing:-.02em;color:var(--fg);line-height:1.1}
+.hero h1 em,.hero.adm h1 em{font-family:var(--f-head);font-style:italic;font-weight:500;color:var(--accent)}
+.hero .sw-sub{color:var(--fg-2)!important;font-family:var(--f-sans)!important;font-style:normal!important;font-size:1.05rem!important}
+.hero p.lede{color:var(--fg-2)}
+.searchbox,.finder{background:var(--surface);border:1px solid var(--line-strong);box-shadow:0 8px 24px -14px rgba(27,31,39,.25)}
+.searchbox .go,.finder .go,:root[data-theme="dark"] .searchbox .go,:root:not([data-theme="light"]) .searchbox .go{background:var(--accent);color:var(--accent-fg)}
+.qpill{border:1px solid var(--line-strong);background:var(--surface);color:var(--fg-2)}
+.qpill:hover{background:var(--sunk)}
+.qpill[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.stats{border-top:1px solid var(--line)}
+.stat + .stat{border-left:1px solid var(--line)}
+.stat .v{font-family:var(--f-head);font-weight:600;letter-spacing:-.01em}
+.stat .l{color:var(--muted)}
+.stat.hot .v{color:#B4432F}
+.op{border-color:var(--line);box-shadow:none}
+.op:hover{border-color:var(--accent);box-shadow:var(--shadow)}
+.op .mono{background:var(--accent-soft)!important;color:var(--accent)!important;font-weight:700}
+.op .t,a.t{font-family:var(--f-head);font-weight:600;font-size:1.06rem;letter-spacing:-.005em}
+.tag.full{background:var(--green-soft);color:var(--green)}
+.sw-page h1,.ss-head h1,.ss-sec h2,.ss-similar h2,.ss-official h2,.sw-page h2{font-family:var(--f-head);font-weight:600}
+.ss-short{background:var(--accent-soft)!important}
+.sw-explore,.sw-related{margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
+.sw-explore h2,.sw-related h2{font-family:var(--f-head);font-size:1.2rem;margin:0 0 12px}
+.sw-links{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.sw-links li{margin:0}
+.sw-links a{display:inline-block;padding:6px 13px;border-radius:999px;background:var(--sunk);border:1px solid var(--line);color:var(--fg-2)!important;text-decoration:none;font-size:.88rem}
+.sw-links a:hover{border-color:var(--accent);color:var(--accent)!important}

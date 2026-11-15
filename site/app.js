@@ -147,8 +147,8 @@ function row(o, extra = "", lead = ""){
 function bindRows(root){
   root.querySelectorAll("[data-save]").forEach(b => b.onclick = e => { e.stopPropagation(); toggleSave(b.dataset.save); });
   root.querySelectorAll("[data-open]").forEach(r => {
-    r.onclick = e => { const a = e.target.closest("a[data-ln]"); if (a && (e.ctrlKey || e.metaKey || e.shiftKey || e.button)) return; if (a) e.preventDefault(); openSheet(r.dataset.open); };
-    r.onkeydown = e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); openSheet(r.dataset.open); } };
+    r.onclick = e => { if (e.target.closest("a[data-ln]")) return; const o = ALL.find(x => x.id === r.dataset.open); if (o && o.link) location.href = o.link; else openSheet(r.dataset.open); };
+    r.onkeydown = e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); r.click(); } };
   });
 }
 function toggleSave(id){
@@ -371,8 +371,8 @@ function renderAdmit(){
   else if (!ADM.some(admOpen)) el.innerHTML = `<div class="empty"><div class="ei">${ico("school")}</div><h3>Open admissions are being gathered</h3><p>Programmes appear here as they are read from official university sites. The list is refreshed every hour.</p></div>`;
   else el.innerHTML = list.length ? list.map(admRow).join("") : `<div class="empty"><div class="ei">${ico("search")}</div><h3>No open programmes match yet</h3><p>Try a shorter degree name, such as "computer science" instead of "MSc in Computer Science", or remove a filter. New programmes are added every hour.</p><button class="btn" onclick="document.getElementById('a-clear').click()">Clear search</button></div>`;
   el.querySelectorAll("[data-adm]").forEach(r => {
-    r.onclick = e => { const a = e.target.closest("a[data-ln]"); if (a && (e.ctrlKey || e.metaKey || e.shiftKey || e.button)) return; if (a) e.preventDefault(); openAdm(r.dataset.adm); };
-    r.onkeydown = e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); openAdm(r.dataset.adm); } };
+    r.onclick = e => { if (e.target.closest("a[data-ln]")) return; const o = ADM.find(x => x.id === r.dataset.adm); if (o && o.link) location.href = o.link; else openAdm(r.dataset.adm); };
+    r.onkeydown = e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); r.click(); } };
   });
 }
 function updAdm(){ saveA(); renderAdmit(); }
@@ -438,6 +438,7 @@ const fromHash = () => { if (location.hash.startsWith("#item=")) return openFrom
 function openFromHash(){
   if (!location.hash.startsWith("#item=")) return;
   const id = decodeURIComponent(location.hash.slice(6));
+  const hit = ALL.find(x => x.id === id) || ADM.find(x => x.id === id); if (hit && hit.link) { location.replace(hit.link); return; }
   if (ALL.some(x => x.id === id)) { show("discover"); openSheet(id); }
   else if (ADM.some(x => x.id === id)) { show("admit"); openAdm(id); }
 }
