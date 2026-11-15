@@ -1,0 +1,185 @@
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+  <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m16 8-2 6-6 2 2-6z"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-school" viewBox="0 0 24 24"><path d="M3 21h18M5 21V10l7-5 7 5v11"/><path d="M9 21v-6h6v6"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/></symbol>
+</svg>
+
+<header class="appbar">
+  <div class="wrap" style="position:relative">
+    <button class="logo" id="home" aria-label="Scholar Wise Africa home">
+      <span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5 12 5l10 4.5-10 4.5z"/><path d="M6 11.5v4.5c0 1.4 2.7 3 6 3s6-1.6 6-3v-4.5"/><path d="M22 9.5v5"/></svg></span>
+      <b>Scholar Wise <span style="color:var(--accent)">Africa</span></b>
+    </button>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" id="t-discover" aria-selected="true"><svg class="i"><use href="#i-compass"/></svg>Discover</button>
+      <button role="tab" id="t-admit" aria-selected="false"><svg class="i"><use href="#i-school"/></svg>Open admissions</button>
+      <button role="tab" id="t-elig" aria-selected="false"><svg class="i"><use href="#i-user"/></svg>Eligibility check</button>
+      <button role="tab" id="t-saved" aria-selected="false"><svg class="i"><use href="#i-star"/></svg>Saved <span class="count" id="savedCount">0</span></button>
+    </nav>
+    <div class="bar-right">
+      <span class="live" id="live"><span class="pulse"></span><span id="liveText">Live list</span></span>
+      <button class="bellbtn" id="bell" aria-label="Notifications" aria-expanded="false" aria-haspopup="dialog">
+        <svg class="i"><use href="#i-bell"/></svg><span class="badge" id="badge" hidden>0</span>
+      </button>
+    </div>
+    <div class="pop" id="pop" role="dialog" aria-label="Notifications" hidden>
+      <div class="pop-h"><h3>Notifications</h3><button class="ghost" id="markall">Mark all as read</button></div>
+      <div class="seg" id="seg">
+        <button data-s="all" aria-pressed="true">All</button>
+        <button data-s="new" aria-pressed="false">New</button>
+        <button data-s="dl" aria-pressed="false">Deadlines</button>
+      </div>
+      <div class="pop-list" id="notes"></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- DISCOVER -->
+  <section id="v-discover">
+    <div class="hero">
+      <div class="wrap">
+        <span class="eyebrow">For African students · Europe · Asia · North America</span>
+        <h1>Find funded opportunities <em>before</em> the deadline does.</h1>
+        <p class="lede">Scholarships, fellowships, internships, funded conferences, calls for papers and grants, gathered from official programmes and trusted listings and checked every hour.</p>
+        <form class="searchbox" id="sform" role="search">
+          <svg class="i"><use href="#i-search"/></svg>
+          <input id="q" type="search" placeholder="Search by programme, country, field or level" aria-label="Search opportunities">
+          <button class="go" type="submit">Search</button>
+        </form>
+        <div class="quick" id="quick" role="group" aria-label="Category"></div>
+        <div class="stats" id="stats"></div>
+      </div>
+    </div>
+    <div class="wrap layout">
+      <aside class="side" id="side" aria-label="Filters">
+        <div class="side-h"><h2>Filters</h2><span style="display:flex;gap:4px"><button class="ghost" id="clear">Clear all</button><button class="iconbtn only-mobile" id="closeSide" aria-label="Close filters"><svg class="i"><use href="#i-x"/></svg></button></span></div>
+        <div class="fgroup"><h3>Region</h3><div id="g-region"></div></div>
+        <div class="fgroup"><h3>Host country</h3><select class="sel" id="g-country" aria-label="Host country"></select></div>
+        <div class="fgroup"><h3>Study level</h3><div id="g-level"></div></div>
+        <div class="fgroup"><h3>Funding</h3><div id="g-funding"></div></div>
+        <div class="fgroup"><h3>Deadline</h3><div id="g-window"></div></div>
+        <div class="fgroup"><label class="opt"><input type="checkbox" id="g-closed"> Include closed</label></div>
+        <div class="sheet-foot"><button class="btn primary lg" id="applySide">Show results</button></div>
+      </aside>
+      <div class="results">
+        <div class="toolbar">
+          <div><h2 id="rtitle">All opportunities</h2><div class="sub" id="rsub"></div></div>
+          <div class="right">
+            <button class="btn only-mobile" id="openSide"><svg class="i"><use href="#i-filter"/></svg>Filters<span id="fcount"></span></button>
+            <select class="sel" id="sort" aria-label="Sort" style="width:auto">
+              <option value="deadline">Closing soonest</option>
+              <option value="new">Recently added</option>
+              <option value="title">Name, A to Z</option>
+            </select>
+          </div>
+        </div>
+        <div class="active-f" id="activeF"></div>
+        <div class="list" id="list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OPEN ADMISSIONS (self-funded study) -->
+  <section id="v-admit" hidden>
+    <div class="hero adm">
+      <div class="wrap">
+        <span class="eyebrow">Self-funded study · Bachelor's and Master's</span>
+        <h1>Find programmes <em>open</em> for admission right now.</h1>
+        <p class="lede">Bachelor's and master's programmes taking applications at universities in Europe, Asia and North America, read from official university sites. Each one shows its closing date, what you need to apply, and any financial aid.</p>
+        <form class="finder" id="aform" role="search">
+          <div class="deg">
+            <svg class="i"><use href="#i-search"/></svg>
+            <input id="a-q" type="search" placeholder="Degree you're looking for, e.g. MSc Computer Science, Nursing, MBA" aria-label="Degree you're looking for" autocomplete="off">
+            <button class="go" type="submit">Find programmes</button>
+          </div>
+          <div class="fgrid">
+            <label>Your country of origin<select id="a-origin"></select></label>
+            <label>Language of instruction<select id="a-lang"></select></label>
+            <label>Level<select id="a-level"></select></label>
+            <label>Field of study<select id="a-field"></select></label>
+            <label>Country of the programme<select id="a-country"></select></label>
+            <label>University<select id="a-uni"></select></label>
+          </div>
+          <p class="note">Only programmes still open for applications are shown. Choosing your country hides programmes you can't apply to and flags any extra steps for applicants from there.</p>
+        </form>
+      </div>
+    </div>
+    <div class="wrap adm-res">
+      <div class="toolbar">
+        <div><h2>Open admissions</h2><div class="sub" id="a-sub">Closing soonest first</div></div>
+        <div class="right">
+          <button class="ghost" id="a-clear">Clear search</button>
+          <select class="sel" id="a-sort" aria-label="Sort" style="width:auto">
+            <option value="deadline">Closing soonest</option>
+            <option value="uni">University, A to Z</option>
+            <option value="new">Recently added</option>
+          </select>
+        </div>
+      </div>
+      <div class="active-f" id="a-chips"></div>
+      <div class="list" id="a-list"></div>
+    </div>
+  </section>
+
+  <!-- ELIGIBILITY -->
+  <section id="v-elig" hidden>
+    <div class="wrap elig">
+      <form class="wiz" id="wiz" novalidate>
+        <div class="wiz-h"><h2>Eligibility check</h2><p>Three quick steps. Your answers stay in this browser.</p></div>
+        <div class="steps" id="steps"><span class="on"></span><span></span><span></span></div>
+        <div class="steplabel" id="steplabel">Step 1 of 3 · About you</div>
+        <div class="wiz-b" id="wb1">
+          <label class="field"><span>Nationality</span><select class="inp" id="e-nat"><option value="">Choose your country</option></select></label>
+          <div class="row2">
+            <label class="field"><span>Age</span><input class="inp" id="e-age" type="number" min="14" max="80" inputmode="numeric" placeholder="e.g. 24"></label>
+            <label class="field"><span>GPA <small>(out of 4.0)</small></span><input class="inp" id="e-gpa" type="number" min="0" max="4" step="0.1" inputmode="decimal" placeholder="e.g. 3.4"></label>
+          </div>
+        </div>
+        <div class="wiz-b" id="wb2" hidden>
+          <div class="field"><span>Level you're applying for</span><div class="choice" id="e-level"></div></div>
+          <label class="field"><span>Field of study</span><input class="inp" id="e-field" type="text" autocomplete="off" placeholder="e.g. public health, computer science"><small>Leave blank to include every field.</small></label>
+        </div>
+        <div class="wiz-b" id="wb3" hidden>
+          <div class="field"><span>Where would you go?</span><div class="choice" id="e-regions"></div></div>
+          <div class="field"><span>What are you looking for?</span><div class="choice" id="e-types"></div></div>
+          <label class="opt"><input type="checkbox" id="e-full"> Only show fully funded</label>
+        </div>
+        <div style="padding:0 22px"><div class="err" id="werr" role="alert"></div></div>
+        <div class="wiz-f">
+          <button class="btn lg" type="button" id="wback" hidden>Back</button>
+          <button class="btn primary lg" type="submit" id="wnext">Continue</button>
+        </div>
+      </form>
+      <div id="eres"></div>
+    </div>
+  </section>
+
+  <!-- SAVED -->
+  <section id="v-saved" hidden>
+    <div class="wrap" style="padding-block:34px 70px">
+      <div class="toolbar"><div><h2>Saved opportunities</h2><div class="sub">Starred items, sorted by deadline. They're kept in this browser.</div></div></div>
+      <div class="list" id="savedList"></div>
+    </div>
+  </section>
+</main>
+
+<div class="scrim" id="scrim"></div>
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-title" aria-hidden="true">
+  <div class="sheet-top"><span class="k" id="sh-kind">Opportunity</span><button class="iconbtn" id="sh-close" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button></div>
+  <div class="sheet-body" id="sh-body"></div>
+  <div class="sheet-foot2" id="sh-foot"></div>
+</aside>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
