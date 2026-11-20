@@ -172,6 +172,7 @@ svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-widt
 .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
 .tag{font-size:.73rem;font-weight:500;padding:2px 8px;border-radius:6px;background:var(--sunk);color:var(--fg-2);border:1px solid var(--line)}
 .tag.full{background:var(--green-soft);color:var(--green);border-color:transparent}
+.tag.nofund{background:transparent;color:var(--muted);border-style:dashed}
 .tag.new{background:var(--accent);color:var(--accent-fg);border-color:transparent}
 .tag.ok{background:transparent;color:var(--green);border-color:transparent;padding-left:0;display:inline-flex;align-items:center;gap:4px}
 .tag.ok svg{width:13px;height:13px}

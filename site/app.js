@@ -9,6 +9,8 @@ const AFRICA = ["Algeria","Angola","Benin","Botswana","Burkina Faso","Burundi","
 const HUES = ["#2457D6","#0F766E","#7C3AED","#B45309","#BE123C","#0369A1","#4D7C0F","#9333EA","#C2410C","#1E40AF"];
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const FUNDK = {travel_grant:"Travel grant",fee_waiver:"Fee waiver",fully_funded:"Fully funded",partial:"Partial funding"};
+const fundTag = o => o.funding === "full" ? `<span class="tag full">Fully funded</span>` : o.funding === "none" ? `<span class="tag nofund">Not funded</span>` : `<span class="tag">${FUNDK[o.funding_kind] || "Partial funding"}</span>`;
 const ico = (n, cls="i") => `<svg class="${cls}"><use href="#i-${n}"/></svg>`;
 const store = {
   get(k, d){ try { const v = localStorage.getItem("ss:"+k); return v == null ? d : JSON.parse(v); } catch { return d; } },
@@ -112,7 +114,7 @@ function renderFilters(){
   const lc = countBy("level", o => o.levels||[]);
   $("#g-level").innerHTML = Object.entries(LEVELS).map(([k,v]) => `<label class="opt"><input type="checkbox" value="${k}" ${F.levels.includes(k)?"checked":""}>${v}<span class="n">${lc[k]||0}</span></label>`).join("");
   const fc = countBy("funding", o => o.funding);
-  $("#g-funding").innerHTML = [["","Any"],["full","Fully funded"],["partial","Partial funding"]].map(([k,v]) => `<label class="opt"><input type="radio" name="fund" value="${k}" ${F.funding===k?"checked":""}>${v}${k?`<span class="n">${fc[k]||0}</span>`:""}</label>`).join("");
+  $("#g-funding").innerHTML = [["","Any"],["full","Fully funded"],["partial","Partial funding"],["none","Not funded"]].map(([k,v]) => `<label class="opt"><input type="radio" name="fund" value="${k}" ${F.funding===k?"checked":""}>${v}${k?`<span class="n">${fc[k]||0}</span>`:""}</label>`).join("");
   $("#g-window").innerHTML = WINDOWS.map(([k,v]) => `<label class="opt"><input type="radio" name="win" value="${k}" ${F.window===k?"checked":""}>${v}</label>`).join("");
   const cs = [...new Set(ALL.map(o => o.host_country).filter(Boolean))].sort();
   $("#g-country").innerHTML = `<option value="">All countries</option>` + cs.map(c => `<option ${c===F.country?"selected":""}>${esc(c)}</option>`).join("");
@@ -138,7 +140,7 @@ function activeChips(){
   F.regions.forEach(r => c.push(["region:"+r, r]));
   if (F.country) c.push(["country", F.country]);
   F.levels.forEach(l => c.push(["level:"+l, LEVELS[l]]));
-  if (F.funding) c.push(["funding", F.funding === "full" ? "Fully funded" : "Partial funding"]);
+  if (F.funding) c.push(["funding", F.funding === "full" ? "Fully funded" : F.funding === "none" ? "Not funded" : "Partial funding"]);
   if (F.window) c.push(["window", WINDOWS.find(w => w[0] === F.window)[1]]);
   if (F.closed) c.push(["closed", "Including closed"]);
   return c;
@@ -163,7 +165,7 @@ function row(o, extra = "", lead = ""){
       <div class="p"><span>${esc(o.provider)}</span><span class="sep"></span><span>${esc(o.host_country === "Global" ? "Global / online" : o.host_country)}</span><span class="sep"></span><span>${esc(TYPE1[o.type] || o.type)}</span></div>
       <div class="tags">
         ${isNew(o) ? `<span class="tag new">New</span>` : ""}
-        ${o.funding === "full" ? `<span class="tag full">Fully funded</span>` : `<span class="tag">Partial funding</span>`}
+        ${fundTag(o)}
         ${(o.levels||[]).map(v => `<span class="tag">${esc(LEVELS[v]||v)}</span>`).join("")}
         ${o.verified ? `<span class="tag ok">${ico("check")}Verified</span>` : ""}
       </div>
@@ -260,7 +262,7 @@ function openSheet(id){
       <div class="mono" style="background:${hue(o.provider)};flex:none">${esc(initials(o.provider))}</div>
       <div style="min-width:0"><h2 id="sh-title">${esc(o.title)}</h2><div class="prov">${esc(o.provider)}</div></div>
     </div>
-    <div class="tags">${o.funding === "full" ? `<span class="tag full">Fully funded</span>` : `<span class="tag">Partial funding</span>`}${(o.levels||[]).map(v => `<span class="tag">${esc(LEVELS[v]||v)}</span>`).join("")}${o.verified ? `<span class="tag ok">${ico("check")}Verified on the official page</span>` : ""}</div>
+    <div class="tags">${fundTag(o)}${(o.levels||[]).map(v => `<span class="tag">${esc(LEVELS[v]||v)}</span>`).join("")}${o.verified ? `<span class="tag ok">${ico("check")}Verified on the official page</span>` : ""}</div>
     <div class="facts">
       <div class="fact"><div class="l">Deadline</div><div class="v">${esc(fmtDate(o.deadline))}</div></div>
       <div class="fact"><div class="l">Time left</div><div class="v" style="color:${l.c==="now"?"var(--red)":l.c==="soon"?"var(--amber)":"inherit"}">${l.t}</div></div>
@@ -269,6 +271,7 @@ function openSheet(id){
       <div class="fact"><div class="l">Fields</div><div class="v">${esc((o.fields||["any"]).map(f => f === "any" ? "All fields" : f).join(", "))}</div></div>
       <div class="fact"><div class="l">Who can apply</div><div class="v">${esc(o.eligible_nationalities === "all African" ? "African nationals" : Array.isArray(o.eligible_nationalities) ? o.eligible_nationalities.join(", ") : o.eligible_nationalities === "any" ? "All nationalities" : "See official page")}</div></div>
     </div>
+    ${o.funding_note ? `<div class="callout${o.funding === "none" ? "" : " good"}"><b>Funding:</b> ${esc(o.funding_note)}</div>` : ""}
     ${o.eligibility_summary ? `<div><h4>In short</h4><p>${esc(o.eligibility_summary)}</p></div>` : ""}
     ${o.link ? `<a class="sw-more" href="${esc(o.link)}">Read the full details</a>` : ""}
     ${o.age_max || o.min_gpa ? `<div class="callout">${o.age_max ? `<b>Age limit:</b> ${o.age_max}. ` : ""}${o.min_gpa ? `<b>Minimum GPA:</b> ${o.min_gpa}/4.0.` : ""}</div>` : ""}
