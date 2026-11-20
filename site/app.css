@@ -372,3 +372,14 @@ a.qpill.sw-self{text-decoration:none;border-style:dashed}
  .appbar .logo{position:relative;z-index:61}
  .toast{bottom:calc(20px + env(safe-area-inset-bottom,0px))!important}
 }
+
+/* numbered pages and Clear all */
+.sw-pager{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;margin:22px 0 8px;grid-column:1/-1}
+.sw-pager a,.sw-pager span{display:inline-flex;align-items:center;justify-content:center;min-width:40px;height:40px;padding:0 12px;border-radius:10px;font-weight:600;font-size:.92rem;text-decoration:none}
+.sw-pager a{background:var(--surface);border:1px solid var(--line-strong);color:var(--fg)}
+.sw-pager a:hover{border-color:var(--accent);color:var(--accent)}
+.sw-pager .pg-n[aria-current]{background:var(--accent);color:var(--accent-fg);border:1px solid var(--accent)}
+.sw-pager .pg-gap{min-width:20px;padding:0;color:var(--muted)}
+.af.sw-clear{background:transparent;border:1px solid var(--line-strong);color:var(--fg);padding:4px 12px;cursor:pointer}
+.af.sw-clear:hover{border-color:var(--accent);color:var(--accent)}
+@media (max-width:480px){.sw-pager{gap:4px}.sw-pager a,.sw-pager span{min-width:36px;height:38px;padding:0 8px;font-size:.88rem}.sw-pager .lbl{display:none}.sw-pager .pg-gap{min-width:14px}}

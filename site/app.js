@@ -46,8 +46,39 @@ const isNew = o => !firstVisit && o.added_at && o.added_at > lastSeen;
 
 /* ---------- filter state ---------- */
 const DEF = {q:"",type:"",regions:[],country:"",levels:[],funding:"",window:"",closed:false,sort:"deadline"};
-const F = Object.assign(structuredClone(DEF), store.get("filters2", {}));
-const saveF = () => store.set("filters2", F);
+const visit = {
+  get(k, d){ try { const v = sessionStorage.getItem("ss:"+k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v){ try { sessionStorage.setItem("ss:"+k, JSON.stringify(v)); } catch {} }
+};
+try { localStorage.removeItem("ss:filters2"); localStorage.removeItem("ss:admit1"); } catch {}
+const F = Object.assign(structuredClone(DEF), visit.get("filters2", {}));
+const saveF = () => visit.set("filters2", F);
+const PER = 20;
+const pgOf = k => Math.max(1, parseInt(new URLSearchParams(location.search).get(k), 10) || 1);
+let PG = pgOf("pg"), APG = pgOf("apg");
+const pgHref = (k, n) => { const q = new URLSearchParams(location.search); if (n > 1) q.set(k, n); else q.delete(k); const s = q.toString(); return location.pathname + (s ? "?" + s : "") + (k === "apg" ? "#admissions" : location.hash.startsWith("#item=") ? "" : location.hash); };
+const setPg = (k, n, push) => { const u = pgHref(k, n); if (u !== location.pathname + location.search + location.hash) history[push ? "pushState" : "replaceState"](history.state, "", u); };
+function pager(k, pages, cur){
+  if (pages < 2) return "";
+  const show = [...new Set([1, cur - 1, cur, cur + 1, pages])].filter(n => n >= 1 && n <= pages).sort((a,b) => a - b);
+  let h = `<nav class="sw-pager" aria-label="Pages">` + (cur > 1 ? `<a class="pg-nav" rel="prev" href="${esc(pgHref(k, cur - 1))}" data-pg="${cur - 1}" aria-label="Previous page">‹<span class="lbl"> Previous</span></a>` : ""), last = 0;
+  for (const n of show){ if (n - last > 1) h += `<span class="pg-gap">…</span>`; h += n === cur ? `<span class="pg-n" aria-current="page">${n}</span>` : `<a class="pg-n" href="${esc(pgHref(k, n))}" data-pg="${n}">${n}</a>`; last = n; }
+  return h + (cur < pages ? `<a class="pg-nav" rel="next" href="${esc(pgHref(k, cur + 1))}" data-pg="${cur + 1}" aria-label="Next page"><span class="lbl">Next </span>›</a>` : "") + `</nav>`;
+}
+function page(list, k){
+  const pages = Math.max(1, Math.ceil(list.length / PER));
+  let cur = k === "pg" ? PG : APG;
+  if (cur > pages){ cur = pages; if (k === "pg") PG = cur; else APG = cur; setPg(k, cur, false); }
+  return {items: list.slice((cur - 1) * PER, cur * PER), nav: pager(k, pages, cur), cur, pages};
+}
+document.addEventListener("click", e => {
+  const a = e.target.closest && e.target.closest(".sw-pager a[data-pg]"); if (!a || e.ctrlKey || e.metaKey || e.shiftKey) return;
+  e.preventDefault();
+  const adm = !!a.closest("#a-list"), n = +a.dataset.pg;
+  if (adm){ APG = n; setPg("apg", n, true); renderAdmit(); $("#a-list").scrollIntoView({behavior:"smooth", block:"start"}); }
+  else { PG = n; setPg("pg", n, true); renderDiscover(); $("#rtitle").scrollIntoView({behavior:"smooth", block:"start"}); }
+});
+window.addEventListener("popstate", () => { const p = pgOf("pg"), q = pgOf("apg"); if (p !== PG){ PG = p; renderDiscover(); } if (q !== APG){ APG = q; if (!$("#v-admit").hidden) renderAdmit(); } });
 function passes(o, skip){
   if (o.status === "duplicate") return false;
   if (!F.closed && !isOpen(o)) return false;
@@ -94,7 +125,7 @@ function renderFilters(){
 $("#g-country").onchange = e => { F.country = e.target.value; update(); };
 $("#g-closed").onchange = e => { F.closed = e.target.checked; update(); };
 $("#sort").onchange = e => { F.sort = e.target.value; update(); };
-$("#clear").onclick = () => { const s = F.sort; Object.assign(F, structuredClone(DEF), {sort:s}); $("#q").value = ""; update(); };
+$("#clear").onclick = () => { Object.assign(F, structuredClone(DEF)); $("#q").value = ""; $("#sort").value = F.sort; update(); };
 $("#sform").onsubmit = e => { e.preventDefault(); F.q = $("#q").value.trim(); update(); $("#rtitle").scrollIntoView({behavior:"smooth",block:"start"}); };
 $("#q").oninput = e => { F.q = e.target.value.trim(); update(); };
 $("#openSide").onclick = () => $("#side").classList.add("open");
@@ -189,9 +220,9 @@ function renderDiscover(){
 
   renderFilters();
   const chips = activeChips();
-  $("#activeF").innerHTML = chips.map(([k,v]) => `<button class="af" data-k="${esc(k)}" aria-label="Remove filter ${esc(v)}">${esc(v)}${ico("x")}</button>`).join("");
+  $("#activeF").innerHTML = chips.map(([k,v]) => `<button class="af" data-k="${esc(k)}" aria-label="Remove filter ${esc(v)}">${esc(v)}${ico("x")}</button>`).join("") + (chips.length ? `<button class="af sw-clear" type="button" onclick="document.getElementById('clear').click()">Clear all</button>` : "");
   $("#activeF").hidden = !chips.length;
-  $("#activeF").querySelectorAll(".af").forEach(b => b.onclick = () => removeChip(b.dataset.k));
+  $("#activeF").querySelectorAll(".af[data-k]").forEach(b => b.onclick = () => removeChip(b.dataset.k));
   $("#fcount").textContent = chips.length ? ` · ${chips.length}` : "";
   $("#sort").value = F.sort;
 
@@ -201,10 +232,11 @@ function renderDiscover(){
   const el = $("#list");
   if (state !== "ready") el.innerHTML = emptyState(state);
   else if (!ALL.length) el.innerHTML = emptyState("none");
-  else el.innerHTML = list.length ? list.map(o => row(o)).join("") : emptyState("nomatch");
+  else if (!list.length) el.innerHTML = emptyState("nomatch");
+  else { const pg = page(list, "pg"); el.innerHTML = pg.items.map(o => row(o)).join("") + pg.nav; if (pg.pages > 1) $("#rsub").textContent += ` · page ${pg.cur} of ${pg.pages}`; }
   bindRows(el);
 }
-function update(){ saveF(); renderDiscover(); }
+function update(){ if (PG !== 1){ PG = 1; setPg("pg", 1, false); } saveF(); renderDiscover(); }
 
 /* ---------- saved ---------- */
 function renderSaved(){
@@ -292,8 +324,8 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 const ALEVELS = {bachelor:"Bachelor's", masters:"Master's"};
 let ADM = [], admState = "loading";
 const ADEF = {q:"",origin:"",lang:"",level:"",field:"",country:"",uni:"",sort:"deadline"};
-const A = Object.assign(structuredClone(ADEF), store.get("admit1", {}));
-const saveA = () => store.set("admit1", A);
+const A = Object.assign(structuredClone(ADEF), visit.get("admit1", {}));
+const saveA = () => visit.set("admit1", A);
 const norm = s => String(s ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/['’.]/g, "");
 const qwords = q => norm(q).split(/[\s,/]+/).filter(w => w && !/^(in|of|and|the|degree|programme|program)$/.test(w));
 const admOpen = o => { if (o.status === "closed" || o.status === "duplicate") return false; if (o.deadline === "rolling") return true; const d = daysLeft(o); return d !== null && d >= 0; };
@@ -328,7 +360,7 @@ function renderAdmFilters(){
 $("#aform").onsubmit = e => { e.preventDefault(); A.q = $("#a-q").value.trim(); updAdm(); $("#a-list").scrollIntoView({behavior:"smooth", block:"start"}); };
 $("#a-q").oninput = e => { A.q = e.target.value.trim(); updAdm(); };
 $("#a-sort").onchange = e => { A.sort = e.target.value; updAdm(); };
-$("#a-clear").onclick = () => { const s = A.sort; Object.assign(A, structuredClone(ADEF), {sort:s}); $("#a-q").value = ""; updAdm(); };
+$("#a-clear").onclick = () => { Object.assign(A, structuredClone(ADEF)); $("#a-q").value = ""; updAdm(); };
 const ACHIP = {q:v => `“${v}”`, origin:v => "From " + v, lang:v => "Taught in " + v, level:v => ALEVELS[v], field:v => v, country:v => "In " + v, uni:v => v};
 function admRow(o){
   const l = left(o);
@@ -356,11 +388,12 @@ function admRow(o){
 }
 function renderAdmit(){
   renderAdmFilters();
-  $("#a-q").value = A.q; $("#a-sort").value = A.sort;
+  if ($("#a-q").value.trim() !== A.q) $("#a-q").value = A.q; $("#a-sort").value = A.sort;
   const chips = Object.keys(ACHIP).filter(k => A[k]).map(k => [k, ACHIP[k](A[k])]);
   $("#a-chips").innerHTML = chips.map(([k,v]) => `<button class="af" data-k="${k}" aria-label="Remove ${esc(v)}">${esc(v)}${ico("x")}</button>`).join("");
+  if (chips.length) $("#a-chips").innerHTML += `<button class="af sw-clear" type="button" onclick="document.getElementById('a-clear').click()">Clear all</button>`;
   $("#a-chips").hidden = !chips.length;
-  $("#a-chips").querySelectorAll(".af").forEach(b => b.onclick = () => { A[b.dataset.k] = ""; updAdm(); });
+  $("#a-chips").querySelectorAll(".af[data-k]").forEach(b => b.onclick = () => { A[b.dataset.k] = ""; updAdm(); });
   $("#a-sub").textContent = A.sort === "deadline" ? "Closing soonest first" : A.sort === "uni" ? "By university" : "Most recently added first";
   let list = ADM.filter(o => admPass(o));
   if (A.sort === "uni") list.sort((a,b) => a.university.localeCompare(b.university) || a.title.localeCompare(b.title));
@@ -369,13 +402,14 @@ function renderAdmit(){
   const el = $("#a-list");
   if (admState !== "ready") el.innerHTML = emptyState(admState);
   else if (!ADM.some(admOpen)) el.innerHTML = `<div class="empty"><div class="ei">${ico("school")}</div><h3>Open admissions are being gathered</h3><p>Programmes appear here as they are read from official university sites. The list is refreshed every hour.</p></div>`;
-  else el.innerHTML = list.length ? list.map(admRow).join("") : `<div class="empty"><div class="ei">${ico("search")}</div><h3>No open programmes match yet</h3><p>Try a shorter degree name, such as "computer science" instead of "MSc in Computer Science", or remove a filter. New programmes are added every hour.</p><button class="btn" onclick="document.getElementById('a-clear').click()">Clear search</button></div>`;
+  else if (list.length){ const pg = page(list, "apg"); el.innerHTML = pg.items.map(admRow).join("") + pg.nav; }
+  else el.innerHTML = `<div class="empty"><div class="ei">${ico("search")}</div><h3>No open programmes match yet</h3><p>Try a shorter degree name, such as "computer science" instead of "MSc in Computer Science", or remove a filter. New programmes are added every hour.</p><button class="btn" onclick="document.getElementById('a-clear').click()">Clear search</button></div>`;
   el.querySelectorAll("[data-adm]").forEach(r => {
     r.onclick = e => { if (e.target.closest("a[data-ln]")) return; const o = ADM.find(x => x.id === r.dataset.adm); if (o && o.link) location.href = o.link; else openAdm(r.dataset.adm); };
     r.onkeydown = e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); r.click(); } };
   });
 }
-function updAdm(){ saveA(); renderAdmit(); }
+function updAdm(){ if (APG !== 1){ APG = 1; setPg("apg", 1, false); } saveA(); renderAdmit(); }
 function openAdm(id){
   const o = ADM.find(x => x.id === id); if (!o) return;
   lastFocus = document.activeElement;
